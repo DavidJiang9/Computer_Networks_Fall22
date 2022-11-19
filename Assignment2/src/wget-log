@@ -1,0 +1,10 @@
+--2022-11-04 14:08:31--  http://192.168.2.2/
+Connecting to 192.168.2.2:80... failed: Connection timed out.
+Retrying.
+
+--2022-11-04 14:10:41--  (try: 2)  http://192.168.2.2/
+Connecting to 192.168.2.2:80... failed: Connection timed out.
+Retrying.
+
+--2022-11-04 14:12:53--  (try: 3)  http://192.168.2.2/
+Connecting to 192.168.2.2:80... failed: No route to host.

@@ -18,10 +18,73 @@
 */
 void sr_arpcache_sweepreqs(struct sr_instance *sr) {
     /* fill in code here */
+    struct sr_arpcache* cache = &sr->cache;
+    pthread_mutex_lock(&(cache->lock));
+    struct sr_arpreq *temp = sr->cache.requests;
+    struct sr_arpreq *next;
+
+    while (temp != NULL){
+        next = temp->next;
+        handle_arpreq(sr, temp);
+        temp = next;
+    }
+    pthread_mutex_unlock(&(cache->lock));
 }
 
 void handle_arpreq(struct sr_instance *sr, struct sr_arpreq *request) {
     /* fill in code here */
+    struct sr_arpcache* cache = &sr->cache;
+    pthread_mutex_lock(&(cache->lock));
+
+    if (difftime(time(NULL), request->sent) > 1.0){
+        if (request->times_sent >= 5){
+            struct sr_packet *temp = request->packets;
+            while(temp != NULL){
+                struct sr_ip_hdr *ipPacket = (struct sr_ip_hdr *) (temp + sizeof(sr_ethernet_hdr_t));
+                uint32_t targetIP = ipPacket->ip_dst;
+                uint32_t sourceIP = ipPacket->ip_src;
+                printf("%s\n","host unreachable, forwarding ICMP error packet");
+                send_icmp_error(sr, 3, 1, (uint8_t *)ipPacket, sourceIP, targetIP, ipPacket->ip_len, (uint8_t *)temp, sizeof(sr_ethernet_hdr_t));
+                temp = temp->next;
+            }
+            sr_arpreq_destroy(&(sr->cache), request);
+        }
+        else{
+            printf("%s\n","sending ARP request");
+            int arpPacketLen = sizeof(sr_ethernet_hdr_t) + sizeof(sr_arp_hdr_t);
+            uint8_t *arpPacket = malloc(arpPacketLen);
+            sr_ethernet_hdr_t *etherPacket = (sr_ethernet_hdr_t *) arpPacket;
+            memset(etherPacket->ether_dhost, 255, ETHER_ADDR_LEN);
+
+            struct sr_if * ifHead = sr->if_list;
+            uint8_t *copy;
+            while (ifHead != NULL) { //sent to all interfaces
+                printf("send ARP request from interface %s\n",ifHead->name);
+                memcpy(etherPacket->ether_shost, (uint8_t *) ifHead->addr, sizeof(uint8_t) * ETHER_ADDR_LEN);
+                etherPacket->ether_type = htons(ethertype_arp);
+
+                sr_arp_hdr_t *arpHdr = (sr_arp_hdr_t *) (arpPacket + sizeof(sr_ethernet_hdr_t));
+                arpHdr->ar_hrd = htons(arp_hrd_ethernet);
+                arpHdr->ar_pro = htons(ethertype_ip);
+                arpHdr->ar_hln = 6;
+                arpHdr->ar_pln = 4;
+                arpHdr->ar_op = htons(arp_op_request);
+                memcpy(arpHdr->ar_sha, ifHead->addr, sizeof(uint8_t) * ETHER_ADDR_LEN);
+                arpHdr->ar_sip = ifHead->ip;
+                memset(arpHdr->ar_tha, 255, ETHER_ADDR_LEN);
+                arpHdr->ar_tip = request->ip; 
+
+                copy = malloc(arpPacketLen);
+                memcpy(copy, etherPacket, arpPacketLen);
+                
+                sr_send_packet(sr, copy, arpPacketLen, ifHead->name);
+                ifHead = ifHead->next;
+            }
+            request->sent = time(NULL);
+            request->times_sent++;
+        }
+    }
+    pthread_mutex_unlock(&(cache->lock));
 }
 
 /* You should not need to touch the rest of this code. */

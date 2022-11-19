@@ -147,6 +147,7 @@ int   sr_arpcache_init(struct sr_arpcache *cache);
 int   sr_arpcache_destroy(struct sr_arpcache *cache);
 void *sr_arpcache_timeout(void *cache_ptr);
 void handle_arpreq(struct sr_instance *, struct sr_arpreq *);
+void sr_arpcache_sweepreqs(struct sr_instance *sr);
 
 /* IMPORTANT: To avoid circular dependencies, do a forward declaration of any
 methods from other files that you need to use. For example, if your sr_arpcache

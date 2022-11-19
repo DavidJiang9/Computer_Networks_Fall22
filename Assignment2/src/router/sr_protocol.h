@@ -77,14 +77,14 @@
 #define ICMP_DATA_SIZE 28
 
 
-/* Structure of a ICMP header
+/* Structure of a ICMP header -------8 B
  */
 struct sr_icmp_hdr {
   uint8_t icmp_type;
   uint8_t icmp_code;
   uint16_t icmp_sum;
   uint32_t unused;
-  uint8_t data[ICMP_DATA_SIZE];
+  uint8_t data[ICMP_DATA_SIZE]; //payload
 } __attribute__ ((packed)) ;
 typedef struct sr_icmp_hdr sr_icmp_hdr_t;
 
@@ -106,7 +106,7 @@ typedef struct sr_icmp_t3_hdr sr_icmp_t3_hdr_t;
 
 
 /*
- * Structure of an internet header, naked of options.
+ * Structure of an internet header, naked of options. ------20B
  */
 struct sr_ip_hdr
   {
@@ -136,7 +136,7 @@ typedef struct sr_ip_hdr sr_ip_hdr_t;
 
 /*
  *  Ethernet packet header prototype.  Too many O/S's define this differently.
- *  Easy enough to solve that and define it here.
+ *  Easy enough to solve that and define it here. -----14B
  */
 struct sr_ethernet_hdr
 {
