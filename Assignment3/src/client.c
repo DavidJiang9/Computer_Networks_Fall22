@@ -63,6 +63,7 @@ main(int argc, char *argv[])
         {
         case 'f':
             filename = optarg;
+
             break;
         case 'q':
             ++quiet_opt;
@@ -348,7 +349,7 @@ get_nvt_line(int sd, char *line)
         len = myread(sd, &this_char, sizeof(this_char));
         if (len < 0)
             return -1;
-
+        
         if (len == 0)
         {
             /* Connection ended before line terminator (or empty string) */
@@ -356,7 +357,7 @@ get_nvt_line(int sd, char *line)
             return 0;
         }
         /** fprintf(stderr, "read character %c\n", this_char); **/
-
+        
         if (last_char == '\r' && this_char == '\n')
         {
             /* Reached the end of line. Already wrote \r into string, overwrite

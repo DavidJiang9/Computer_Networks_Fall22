@@ -117,9 +117,11 @@ static void do_connection(mysocket_t sd)
 
     for (;;)
     {
+        // printf("dsasdsa\n");
         rc = get_nvt_line(sd, line);
         if (rc < 0 || !*line)
             goto done;
+        // printf("dsasdsa\n");
         fprintf(stderr, "client: %s\n", line);
 
         if (process_line(sd, line) < 0)
@@ -130,6 +132,7 @@ static void do_connection(mysocket_t sd)
     }   /* for (;;) */
 
 done:
+    // printf("dsasdsa\n");
     if (myclose(sd) < 0)
     {
         perror("myclose (sd)");
@@ -157,6 +160,7 @@ get_nvt_line(int sd, char *line)
     for (;;)
     {
         len = myread(sd, &this_char, sizeof(this_char));
+        // printf("%d-%d ",this_char,len);
         if (len < 0)
             return -1;
 
@@ -164,6 +168,7 @@ get_nvt_line(int sd, char *line)
         {
             /* Connection ended before line terminator (or empty string) */
             *line = '\0';
+        
             return 0;
         }
     /** fprintf(stderr, "read character %c\n", this_char); **/
@@ -178,6 +183,7 @@ get_nvt_line(int sd, char *line)
         *line++ = this_char;
         last_char = this_char;
     }
+    
     return -1;
 }
 
@@ -197,7 +203,7 @@ process_line(int sd, char *line)
 {
     char resp[5000];
     int fd = -1, length;
-
+    // printf("dsasdsa\n");
     if (!*line || access(line, R_OK) < 0)
     {
         sprintf(resp, "%s,-1,File does not exist or access denied\r\n", line);

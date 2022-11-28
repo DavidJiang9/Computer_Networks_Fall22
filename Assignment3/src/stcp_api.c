@@ -250,6 +250,7 @@ size_t stcp_app_recv(mysocket_t sd, void *dst, size_t max_len)
 void stcp_app_send(mysocket_t sd, const void *src, size_t src_len)
 {
     mysock_context_t *ctx = _mysock_get_context(sd);
+    
     assert(ctx && src);
     if (src_len > 0)
     {
